@@ -1,0 +1,25 @@
+{
+    "start_of_last_period": "2019/02/19",
+    "min_possible_conception": "2019/02/26",
+    "max_possible_conception": "2019/03/05",
+    "doctors_age_estimations": [
+        {
+            "weeks": 5,
+            "days": 3,
+            "date": "2019/04/04"
+        },
+        {
+            "weeks": 8,
+            "days": 0,
+            "date": "2019/04/16"
+        }
+    ],
+    "email_smtp_host": "some_host",
+    "email_smtp_port": 587,
+    "email_smtp_tls": true,
+    "email_rcpt_to": [
+        "an@email"
+    ],
+    "email_from": "an@email",
+    "email_password": "averysecretpassword"
+}

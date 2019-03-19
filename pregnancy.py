@@ -9,6 +9,7 @@ import sys
 import tempfile
 import time
 from email.mime.text import MIMEText
+import locale
 
 import zodiac_sign
 from dateutil.parser import parse
@@ -113,6 +114,8 @@ def main(input_data, out_file):
           divmod(fetal_age_doctors.days, 7), file=out_file)
     print(screen_line, file=out_file)
 
+    loc = locale.getlocale()
+    locale.setlocale(locale.LC_ALL, 'en_US')
     delivery_dates = ["%s %s [%s]" % (dt.strftime("%A"), dt.isoformat(
     ), zodiac_sign.get_zodiac_sign(dt)) for dt in fuzzy_delivery_date(last_period)]
     naegele_date = naegele_due_date(last_period)
@@ -124,6 +127,7 @@ def main(input_data, out_file):
     print("Harry’s prediction of due date:", "%s %s [%s]" % (harrys_date.strftime(
         "%A"), harrys_date.isoformat(), zodiac_sign.get_zodiac_sign(harrys_date)), file=out_file)
     print(screen_line, file=out_file)
+    locale.setlocale(locale.LC_ALL, loc)
 
     total_days = (harrys_date - last_period).days
     completed_days = (datetime.date.today() - last_period).days

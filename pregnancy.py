@@ -115,7 +115,7 @@ def main(input_data, out_file):
     print(screen_line, file=out_file)
 
     loc = locale.getlocale()
-    locale.setlocale(locale.LC_ALL, 'en_US')
+    locale.setlocale(locale.LC_ALL, 'C')
     delivery_dates = ["%s %s [%s]" % (dt.strftime("%A"), dt.isoformat(
     ), zodiac_sign.get_zodiac_sign(dt)) for dt in fuzzy_delivery_date(last_period)]
     naegele_date = naegele_due_date(last_period)

@@ -9,6 +9,7 @@ name = "pypi"
 
 zodiac-sign = "*"
 progress = {git = "https://github.com/hargikas/progress.git", editable = true}
+python-dateutil = "*"
 
 
 [dev-packages]

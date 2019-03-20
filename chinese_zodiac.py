@@ -60,7 +60,7 @@ def calculate_dt(birthday):
     if isinstance(birthday, datetime.datetime):
         birthday = birthday.date()
     year = birthday.year
-    chinese_new_year = LunarDate(birthday.year, 1, 1).toSolarDate()
+    chinese_new_year = LunarDate(year, 1, 1).toSolarDate()
     if chinese_new_year > birthday:
         year -= 1
     return calculate(year)

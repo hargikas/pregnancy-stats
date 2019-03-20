@@ -12,6 +12,7 @@ from email.mime.text import MIMEText
 import locale
 
 import zodiac_sign
+import chinese_zodiac
 from dateutil.parser import parse
 
 from progress.bar import ShadyBar
@@ -118,6 +119,8 @@ def main(input_data, out_file):
     locale.setlocale(locale.LC_ALL, 'C')
     delivery_dates = ["%s %s [%s]" % (dt.strftime("%A"), dt.isoformat(
     ), zodiac_sign.get_zodiac_sign(dt)) for dt in fuzzy_delivery_date(last_period)]
+    chinese_zodiacs = set([chinese_zodiac.calculate_dt(dt)
+                           for dt in fuzzy_delivery_date(last_period)])
     naegele_date = naegele_due_date(last_period)
     # My prognosis
     harrys_date = naegele_due_date(possible_start_gestation[-1])
@@ -126,6 +129,7 @@ def main(input_data, out_file):
         "%A"), naegele_date.isoformat(), zodiac_sign.get_zodiac_sign(naegele_date)), file=out_file)
     print("Harry’s prediction of due date:", "%s %s [%s]" % (harrys_date.strftime(
         "%A"), harrys_date.isoformat(), zodiac_sign.get_zodiac_sign(harrys_date)), file=out_file)
+    print("Chinese zodiac:", " or ".join(chinese_zodiacs))
     print(screen_line, file=out_file)
     locale.setlocale(locale.LC_ALL, loc)
 
@@ -138,7 +142,8 @@ def main(input_data, out_file):
                 time.sleep(0.025)
                 bar.next()
     else:
-        print("Pregnacy is about %.1f%% complete" % (completed_days*100/total_days), file=out_file)
+        print("Pregnacy is about %.1f%% complete" %
+              (completed_days*100/total_days), file=out_file)
 
 
 def send_email(email_info, email_msg):

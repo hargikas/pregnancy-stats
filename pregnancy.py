@@ -55,40 +55,43 @@ def main(input_data, out_file):
     # 3/4/2019 Επίσκεψη γιατρού me πρώτη εκτίμηση και εκτύπωση σε χαρτί
     # Εκτίμηση γιατρού
 
-    estimations = [(parse(est["date"]).date(), datetime.timedelta(
+    estimations = [(parse(est["date"]).date(), relativedelta(
         weeks=est["weeks"], days=est["days"]))
         for est in input_data["doctors_age_estimations"]]
 
     possible_start_gestation = [find_start_of_gestation(
         a_date, age) for a_date, age in estimations]
 
-    print("Doctor’s estimates for the start of the pregnacy (gestation):", file=out_file)
-    for i, doctors_conception in enumerate(possible_start_gestation):
-        print("\t%s estimate:" % (ordinal(i+1)),
-              doctors_conception, file=out_file)
-    print(screen_line, file=out_file)
+    if possible_start_gestation:
+        print("Doctor’s estimates for the start of the pregnacy (gestation):", file=out_file)
+        for i, doctors_conception in enumerate(possible_start_gestation):
+            print("\t%s estimate:" % (ordinal(i+1)),
+                doctors_conception, file=out_file)
+        print(screen_line, file=out_file)
+        doctors_age = datetime.date.today() - possible_start_gestation[-1]
+        fetal_age_doctors = doctors_age + relativedelta(weeks=-2)
 
     gestational_age = datetime.date.today() - last_period
-    doctors_age = datetime.date.today() - possible_start_gestation[-1]
     fetal_age_min = datetime.date.today() - conception_max
     fetal_age_max = datetime.date.today() - conception_min
-    fetal_age_aprox = gestational_age - datetime.timedelta(weeks=2)
-    fetal_age_doctors = doctors_age - datetime.timedelta(weeks=2)
+    fetal_age_aprox = gestational_age + relativedelta(weeks=-2)
 
     print("Gestational Age:", file=out_file)
     print("\tGestational age (calculated from last period) (Weeks, Days):",
           divmod(gestational_age.days, 7), file=out_file)
-    print("\tDoctor’s last estimate of gestational age (Weeks, Days):",
-          divmod(doctors_age.days, 7), file=out_file)
+    if doctors_age and doctors_age != gestational_age:
+        print("\tDoctor’s last estimate of gestational age (Weeks, Days):",
+            divmod(doctors_age.days, 7), file=out_file)
     print("Fetal Age:", file=out_file)
     print("\tMax fetal age (Weeks, Days):", divmod(
         fetal_age_max.days, 7), file=out_file)
     print("\tMin fetal age (Weeks, Days):", divmod(
         fetal_age_min.days, 7), file=out_file)
-    print("\tApproximation of fetal age based on period (Week, Days):",
+    print("\tApproximation of fetal age based on last period (Week, Days):",
           divmod(fetal_age_aprox.days, 7), file=out_file)
-    print("\tApproximation of fetal age based on doctor’s last estimate (Week, Days):",
-          divmod(fetal_age_doctors.days, 7), file=out_file)
+    if fetal_age_doctors and fetal_age_doctors != fetal_age_aprox:
+        print("\tApproximation of fetal age based on doctor’s last estimate (Week, Days):",
+            divmod(fetal_age_doctors.days, 7), file=out_file)
     print(screen_line, file=out_file)
 
     loc = locale.getlocale()
@@ -98,18 +101,24 @@ def main(input_data, out_file):
     chinese_zodiacs = set([chinese_zodiac.calculate_dt(dt)
                            for dt in fuzzy_delivery_date(last_period)])
     naegele_date = naegele_due_date(last_period)
-    # My prognosis
-    harrys_date = naegele_due_date(possible_start_gestation[-1])
+
     print("Possible Delivery Dates:", ' - '.join(delivery_dates), file=out_file)
     print("Due Date (Naegele’s rule):", "%s %s [%s]" % (naegele_date.strftime(
         "%A"), naegele_date.isoformat(), zodiac_sign.get_zodiac_sign(naegele_date)), file=out_file)
-    print("Harry’s prediction of due date:", "%s %s [%s]" % (harrys_date.strftime(
-        "%A"), harrys_date.isoformat(), zodiac_sign.get_zodiac_sign(harrys_date)), file=out_file)
+    # My prognosis
+    if possible_start_gestation and possible_start_gestation[-1] != last_period:
+        harrys_date = naegele_due_date(possible_start_gestation[-1])
+        print("Harry’s prediction of due date:", "%s %s [%s]" % (harrys_date.strftime(
+            "%A"), harrys_date.isoformat(), zodiac_sign.get_zodiac_sign(harrys_date)), file=out_file)
     print("Chinese zodiac:", " or ".join(chinese_zodiacs), file=out_file)
     print(screen_line, file=out_file)
     locale.setlocale(locale.LC_ALL, loc)
-
-    total_days = (harrys_date - last_period).days
+    
+    try:
+        total_days = (harrys_date - last_period).days
+    except UnboundLocalError:
+        total_days = (naegele_date - last_period).days
+        
     completed_days = (datetime.date.today() - last_period).days
     if out_file is sys.stdout:
         # Animation of Progress Bar

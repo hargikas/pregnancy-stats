@@ -135,7 +135,7 @@ def main(input_data, out_file):
     print(screen_line, file=out_file)
 
     print("", file=out_file)
-    print("Silly & Fun Stuff".center(len(screen_line), '*'), file=out_file)
+    print(" Silly & Fun Stuff ".center(len(screen_line), '*'), file=out_file)
     print("", file=out_file)
     chinese_zodiacs = set([chinese_zodiac.calculate_dt(dt)
                            for dt in fuzzy_delivery_date(last_period)])

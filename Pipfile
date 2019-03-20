@@ -1,15 +1,21 @@
 [[source]]
+
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+
 [packages]
+
 zodiac-sign = "*"
 progress = {git = "https://github.com/hargikas/progress.git",editable = true}
 python-dateutil = "*"
 lunardate = "*"
+pyaztro = "*"
+
 
 [dev-packages]
+
 pylint = "*"
 "autopep8" = "*"
 rope = "*"

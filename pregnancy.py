@@ -105,7 +105,7 @@ def main(input_data, out_file):
         "%A"), naegele_date.isoformat(), zodiac_sign.get_zodiac_sign(naegele_date)), file=out_file)
     print("Harry’s prediction of due date:", "%s %s [%s]" % (harrys_date.strftime(
         "%A"), harrys_date.isoformat(), zodiac_sign.get_zodiac_sign(harrys_date)), file=out_file)
-    print("Chinese zodiac:", " or ".join(chinese_zodiacs))
+    print("Chinese zodiac:", " or ".join(chinese_zodiacs), file=out_file)
     print(screen_line, file=out_file)
     locale.setlocale(locale.LC_ALL, loc)
 

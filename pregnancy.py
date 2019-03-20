@@ -1,7 +1,7 @@
 import argparse
-import calendar
 import datetime
 import json
+import locale
 import math
 import shutil
 import smtplib
@@ -9,12 +9,12 @@ import sys
 import tempfile
 import time
 from email.mime.text import MIMEText
-import locale
 
 import zodiac_sign
-import chinese_zodiac
 from dateutil.parser import parse
+from dateutil.relativedelta import relativedelta
 
+import chinese_zodiac
 from progress.bar import ShadyBar
 
 
@@ -22,34 +22,12 @@ def ordinal(n):
     return "%d%s" % (n, "tsnrhtdd"[(math.floor(n/10) % 10 != 1)*(n % 10 < 4)*n % 10::4])
 
 
-def add_months(sourcedate, months):
-    month = sourcedate.month - 1 + months
-    year = sourcedate.year + month // 12
-    month = month % 12 + 1
-    day = min(sourcedate.day, calendar.monthrange(year, month)[1])
-    return datetime.date(year, month, day)
-
-
-def add_years(sourcedate, years):
-    new_year = sourcedate.year + years
-    try:
-        return sourcedate.replace(year=new_year)
-    except ValueError:
-        # Leap day
-        if (sourcedate.month == 2 and
-                sourcedate.day == 29 and
-                calendar.isleap(sourcedate.year) and
-                not calendar.isleap(new_year)):
-            return sourcedate.replace(year=new_year, day=28)
-        raise
-
-
 def fuzzy_delivery_date(last_period):
     min_weeks = 37
     max_weeks = 42
 
-    min_delivery = last_period + datetime.timedelta(weeks=min_weeks)
-    max_delivery = last_period + datetime.timedelta(weeks=max_weeks)
+    min_delivery = last_period + relativedelta(weeks=+min_weeks)
+    max_delivery = last_period + relativedelta(weeks=+max_weeks)
 
     return [min_delivery, max_delivery]
 
@@ -58,9 +36,7 @@ def naegele_due_date(last_period):
     # Naegele’s rule (for 28 days period)
     # https://www.healthline.com/health/pregnancy/what-is-gestation#calculate-a-due-date
     # https://www.healthline.com/health/pregnancy/your-due-date#1
-    due_date = last_period + datetime.timedelta(days=7)
-    due_date = add_months(due_date, -3)
-    due_date = add_years(due_date, 1)
+    due_date = last_period + relativedelta(weeks=+1, months=-3, years=+1)
     return due_date
 
 

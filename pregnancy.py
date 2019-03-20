@@ -105,7 +105,7 @@ def main(input_data, out_file):
     naegele_date = naegele_due_date(last_period)
     possible_zodiac = zodiac_sign.get_zodiac_sign(naegele_date)
 
-    print("Possible Delivery Dates:", ' - '.join(delivery_dates), file=out_file)
+    print("Possible Due Dates:", ' - '.join(delivery_dates), file=out_file)
     print("Due Date (Naegele’s rule):", "%s %s [%s]" % (naegele_date.strftime(
         "%A"), naegele_date.isoformat(), possible_zodiac), file=out_file)
     # My prognosis

@@ -122,12 +122,12 @@ def main(input_data, out_file):
 
     loc = locale.getlocale()
     locale.setlocale(locale.LC_ALL, 'C')
-    delivery_dates = ["%s %s [%s]" % (dt.strftime("%A"), dt.isoformat(
-    ), zodiac_sign.get_zodiac_sign(dt)) for dt in fuzzy_delivery_date(last_period)]
+    delivery_dates = ["%s [%s]" % (dt.isoformat(), zodiac_sign.get_zodiac_sign(
+        dt)) for dt in fuzzy_delivery_date(last_period)]
     naegele_date = naegele_due_date(last_period)
     possible_zodiac = zodiac_sign.get_zodiac_sign(naegele_date)
 
-    print("Possible Due Dates:", ' - '.join(delivery_dates), file=out_file)
+    print("Due Date Variability:", ' - '.join(delivery_dates), file=out_file)
     print("Due Date (Naegele’s rule):", "%s %s [%s]" % (naegele_date.strftime(
         "%A"), naegele_date.isoformat(), possible_zodiac), file=out_file)
     # My prognosis
@@ -155,21 +155,30 @@ def main(input_data, out_file):
         print("Pregnacy is about %.1f%% complete" %
               (completed_days*100/total_days), file=out_file)
     print(screen_line, file=out_file)
-    fun_stuff(last_period, possible_zodiac, out_file)
+
+    print("", file=out_file)
+    print(" Silly & Fun Stuff ".center(len(screen_line), '*'), file=out_file)
+    print("\n~~~Baby~~~", file=out_file)
+    try:
+        fun_stuff(harrys_date, out_file)
+    except UnboundLocalError:
+        fun_stuff(naegele_date, out_file)
+    print("\n~~~Mother~~~", file=out_file)
+    fun_stuff(parse(input_data["mothers_birthday"]).date(), out_file)
+    print("\n~~~Father~~~", file=out_file)
+    fun_stuff(parse(input_data["fathers_birthday"]).date(), out_file)
+
     return (gestational_age, completed_days*100/total_days)
 
 
-def fun_stuff(last_period, possible_zodiac, out_file):
+def fun_stuff(birthday, out_file):
     screen_size = shutil.get_terminal_size()[0] - 1
-    print("", file=out_file)
-    print(" Silly & Fun Stuff ".center(screen_size, '*'), file=out_file)
-    print("", file=out_file)
-    chinese_zodiacs = set([chinese_zodiac.calculate_dt(dt)
-                           for dt in fuzzy_delivery_date(last_period)])
-    chinese_desc = "Chinese zodiac: %s" % (" or ".join(chinese_zodiacs))
+    chinese_desc = "Chinese zodiac: %s" % (
+        chinese_zodiac.calculate_dt(birthday))
     print(textwrap.fill(chinese_desc, width=screen_size), file=out_file)
     print("", file=out_file)
-    horoscope = pyaztro.Aztro(sign=possible_zodiac.lower())
+    horoscope = pyaztro.Aztro(
+        sign=zodiac_sign.get_zodiac_sign(birthday).lower())
     horoscope_desc = "Horoscope for %s: %s" % (
         horoscope.sign.capitalize(), horoscope.description)
     print(textwrap.fill(horoscope_desc, width=screen_size), file=out_file)
@@ -186,7 +195,7 @@ def send_email(email_info, email_msg, age, percent):
     # Create message container - the correct MIME type is multipart/alternative.
     msg = MIMEMultipart('alternative')
     msg['Subject'] = 'Statistics for pregnancy. Progress: %s [%.1f%%]...' % (
-        age, percent)
+        td_format(age), percent)
     msg['From'] = email_info["email_from"]
     msg['To'] = commaspace.join(email_info["email_rcpt_to"])
 
@@ -232,4 +241,5 @@ if __name__ == '__main__':
             else:
                 (age, percent) = main(data, sys.stdout)
                 if percent > 100:
-                    print("Baby delivery could happen any time now!", file=sys.stderr)
+                    print("Baby delivery could happen any time now!",
+                          file=sys.stderr)

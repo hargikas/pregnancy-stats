@@ -27,6 +27,28 @@ def ordinal(n):
     return "%d%s" % (n, "tsnrhtdd"[(math.floor(n/10) % 10 != 1)*(n % 10 < 4)*n % 10::4])
 
 
+def td_format(td_object):
+    seconds = int(td_object.total_seconds())
+    periods = [
+        ('year',        60*60*24*365),
+        ('month',       60*60*24*30),
+        ('week',        60*60*24*7),
+        ('day',         60*60*24),
+        ('hour',        60*60),
+        ('minute',      60),
+        ('second',      1)
+    ]
+
+    strings = []
+    for period_name, period_seconds in periods:
+        if seconds >= period_seconds:
+            period_value, seconds = divmod(seconds, period_seconds)
+            has_s = 's' if period_value > 1 else ''
+            strings.append("%s %s%s" % (period_value, period_name, has_s))
+
+    return ", ".join(strings)
+
+
 def fuzzy_delivery_date(last_period):
     min_weeks = 37
     max_weeks = 42
@@ -133,19 +155,24 @@ def main(input_data, out_file):
         print("Pregnacy is about %.1f%% complete" %
               (completed_days*100/total_days), file=out_file)
     print(screen_line, file=out_file)
+    fun_stuff(last_period, possible_zodiac, out_file)
+    return (gestational_age, completed_days*100/total_days)
 
+
+def fun_stuff(last_period, possible_zodiac, out_file):
+    screen_size = shutil.get_terminal_size()[0] - 1
     print("", file=out_file)
-    print(" Silly & Fun Stuff ".center(len(screen_line), '*'), file=out_file)
+    print(" Silly & Fun Stuff ".center(screen_size, '*'), file=out_file)
     print("", file=out_file)
     chinese_zodiacs = set([chinese_zodiac.calculate_dt(dt)
                            for dt in fuzzy_delivery_date(last_period)])
     chinese_desc = "Chinese zodiac: %s" % (" or ".join(chinese_zodiacs))
-    print(textwrap.fill(chinese_desc, width=len(screen_line)), file=out_file)
+    print(textwrap.fill(chinese_desc, width=screen_size), file=out_file)
     print("", file=out_file)
     horoscope = pyaztro.Aztro(sign=possible_zodiac.lower())
     horoscope_desc = "Horoscope for %s: %s" % (
         horoscope.sign.capitalize(), horoscope.description)
-    print(textwrap.fill(horoscope_desc, width=len(screen_line)), file=out_file)
+    print(textwrap.fill(horoscope_desc, width=screen_size), file=out_file)
     print("", file=out_file)
     print("Color:", horoscope.color, file=out_file)
     print("Mood:", horoscope.mood, file=out_file)
@@ -154,12 +181,12 @@ def main(input_data, out_file):
     print("Lucky Time:", horoscope.lucky_time, file=out_file)
 
 
-def send_email(email_info, email_msg):
+def send_email(email_info, email_msg, age, percent):
     commaspace = ', '
     # Create message container - the correct MIME type is multipart/alternative.
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = 'Pregnancy Statistics for: %s' % (
-        datetime.date.today().strftime("%x"))
+    msg['Subject'] = 'Statistics for pregnancy. Progress: %s [%.1f%%]...' % (
+        age, percent)
     msg['From'] = email_info["email_from"]
     msg['To'] = commaspace.join(email_info["email_rcpt_to"])
 
@@ -197,9 +224,12 @@ if __name__ == '__main__':
             data = json.load(fr_obj)
             if args.email and data['email_rcpt_to']:
                 with tempfile.TemporaryFile(mode='w+', encoding="utf-8") as f_tmp:
-                    main(data, f_tmp)
-                    f_tmp.seek(0)
-                    output = f_tmp.read()
-                    send_email(data, output)
+                    (age, percent) = main(data, f_tmp)
+                    if percent <= 100:
+                        f_tmp.seek(0)
+                        output = f_tmp.read()
+                        send_email(data, output, age, percent)
             else:
-                main(data, sys.stdout)
+                (age, percent) = main(data, sys.stdout)
+                if percent > 100:
+                    print("Baby delivery could happen any time now!", file=sys.stderr)

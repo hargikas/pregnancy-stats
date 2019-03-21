@@ -172,6 +172,8 @@ def main(input_data, out_file):
 
 
 def fun_stuff(birthday, out_file):
+    loc = locale.getlocale()
+    locale.setlocale(locale.LC_ALL, 'C')
     screen_size = shutil.get_terminal_size()[0] - 1
     chinese_desc = "Chinese zodiac: %s" % (
         chinese_zodiac.calculate_dt(birthday))
@@ -188,6 +190,7 @@ def fun_stuff(birthday, out_file):
     print("Compatibility:", horoscope.compatibility, file=out_file)
     print("Lucky Number:", horoscope.lucky_number, file=out_file)
     print("Lucky Time:", horoscope.lucky_time, file=out_file)
+    locale.setlocale(locale.LC_ALL, loc)
 
 
 def send_email(email_info, email_msg, age, percent):

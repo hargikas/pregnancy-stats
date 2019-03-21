@@ -11,6 +11,7 @@ import sys
 import tempfile
 import textwrap
 import time
+from contextlib import contextmanager
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -21,6 +22,14 @@ from dateutil.relativedelta import relativedelta
 
 import chinese_zodiac
 from progress.bar import ShadyBar
+
+
+@contextmanager
+def c_locale():
+    loc = locale.getlocale()
+    locale.setlocale(locale.LC_ALL, 'C')
+    yield True
+    locale.setlocale(locale.LC_ALL, loc)
 
 
 def ordinal(n):
@@ -120,24 +129,22 @@ def main(input_data, out_file):
               divmod(fetal_age_doctors.days, 7), file=out_file)
     print(screen_line, file=out_file)
 
-    loc = locale.getlocale()
-    locale.setlocale(locale.LC_ALL, 'C')
-    delivery_dates = ["%s [%s]" % (dt.isoformat(), zodiac_sign.get_zodiac_sign(
-        dt)) for dt in fuzzy_delivery_date(last_period)]
-    naegele_date = naegele_due_date(last_period)
-    possible_zodiac = zodiac_sign.get_zodiac_sign(naegele_date)
+    with c_locale():
+        delivery_dates = ["%s [%s]" % (dt.isoformat(), zodiac_sign.get_zodiac_sign(
+            dt)) for dt in fuzzy_delivery_date(last_period)]
+        naegele_date = naegele_due_date(last_period)
+        possible_zodiac = zodiac_sign.get_zodiac_sign(naegele_date)
 
-    print("Due Date Variability:", ' - '.join(delivery_dates), file=out_file)
-    print("Due Date (Naegele’s rule):", "%s %s [%s]" % (naegele_date.strftime(
-        "%A"), naegele_date.isoformat(), possible_zodiac), file=out_file)
-    # My prognosis
-    if possible_start_gestation and possible_start_gestation[-1] != last_period:
-        harrys_date = naegele_due_date(possible_start_gestation[-1])
-        possible_zodiac = zodiac_sign.get_zodiac_sign(harrys_date)
-        print("Harry’s prediction of due date:", "%s %s [%s]" % (harrys_date.strftime(
-            "%A"), harrys_date.isoformat(), possible_zodiac), file=out_file)
-    print(screen_line, file=out_file)
-    locale.setlocale(locale.LC_ALL, loc)
+        print("Due Date Variability:", ' - '.join(delivery_dates), file=out_file)
+        print("Due Date (Naegele’s rule):", "%s %s [%s]" % (naegele_date.strftime(
+            "%A"), naegele_date.isoformat(), possible_zodiac), file=out_file)
+        # My prognosis
+        if possible_start_gestation and possible_start_gestation[-1] != last_period:
+            harrys_date = naegele_due_date(possible_start_gestation[-1])
+            possible_zodiac = zodiac_sign.get_zodiac_sign(harrys_date)
+            print("Harry’s prediction of due date:", "%s %s [%s]" % (harrys_date.strftime(
+                "%A"), harrys_date.isoformat(), possible_zodiac), file=out_file)
+        print(screen_line, file=out_file)
 
     try:
         total_days = (harrys_date - last_period).days
@@ -172,25 +179,23 @@ def main(input_data, out_file):
 
 
 def fun_stuff(birthday, out_file):
-    loc = locale.getlocale()
-    locale.setlocale(locale.LC_ALL, 'C')
     screen_size = shutil.get_terminal_size()[0] - 1
-    chinese_desc = "Chinese zodiac: %s" % (
-        chinese_zodiac.calculate_dt(birthday))
-    print(textwrap.fill(chinese_desc, width=screen_size), file=out_file)
-    print("", file=out_file)
-    horoscope = pyaztro.Aztro(
-        sign=zodiac_sign.get_zodiac_sign(birthday).lower())
-    horoscope_desc = "Horoscope for %s: %s" % (
-        horoscope.sign.capitalize(), horoscope.description)
-    print(textwrap.fill(horoscope_desc, width=screen_size), file=out_file)
-    print("", file=out_file)
-    print("Color:", horoscope.color, file=out_file)
-    print("Mood:", horoscope.mood, file=out_file)
-    print("Compatibility:", horoscope.compatibility, file=out_file)
-    print("Lucky Number:", horoscope.lucky_number, file=out_file)
-    print("Lucky Time:", horoscope.lucky_time, file=out_file)
-    locale.setlocale(locale.LC_ALL, loc)
+    with c_locale():
+        chinese_desc = "Chinese zodiac: %s" % (
+            chinese_zodiac.calculate_dt(birthday))
+        print(textwrap.fill(chinese_desc, width=screen_size), file=out_file)
+        print("", file=out_file)
+        horoscope = pyaztro.Aztro(
+            sign=zodiac_sign.get_zodiac_sign(birthday).lower())
+        horoscope_desc = "Horoscope for %s: %s" % (
+            horoscope.sign.capitalize(), horoscope.description)
+        print(textwrap.fill(horoscope_desc, width=screen_size), file=out_file)
+        print("", file=out_file)
+        print("Color:", horoscope.color, file=out_file)
+        print("Mood:", horoscope.mood, file=out_file)
+        print("Compatibility:", horoscope.compatibility, file=out_file)
+        print("Lucky Number:", horoscope.lucky_number, file=out_file)
+        print("Lucky Time:", horoscope.lucky_time, file=out_file)
 
 
 def send_email(email_info, email_msg, age, percent):

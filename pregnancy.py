@@ -146,6 +146,11 @@ def main(input_data, out_file):
                 "%A"), harrys_date.isoformat(), possible_zodiac), file=out_file)
         print(screen_line, file=out_file)
 
+    week_info = pregnacy_facts(gestational_age.days // 7)
+    print("Information about the", week_info[0], file=out_file)
+    print(week_info[1], file=out_file)
+    print(screen_line, file=out_file)
+
     try:
         total_days = (harrys_date - last_period).days
     except UnboundLocalError:
@@ -198,6 +203,15 @@ def fun_stuff(birthday, out_file):
         print("Lucky Time:", horoscope.lucky_time, file=out_file)
 
 
+def pregnacy_facts(week):
+    index = week - 1
+    with open('pregnancy.facts', 'r') as fr_obj:
+        facts = json.load(fr_obj)
+        if index < len(facts):
+            return facts[index]
+    return None
+
+
 def send_email(email_info, email_msg, age, percent):
     commaspace = ', '
     # Create message container - the correct MIME type is multipart/alternative.
@@ -207,9 +221,10 @@ def send_email(email_info, email_msg, age, percent):
     msg['From'] = email_info["email_from"]
     msg['To'] = commaspace.join(email_info["email_rcpt_to"])
 
+    week_info = pregnacy_facts(age.days // 7)
     # Record the MIME types of both parts - text/plain and text/html.
-    html_text = '<html><head></head><body><pre width="79">%s</pre></body></html>' % (
-        html.escape(email_msg))
+    html_text = '<html><head></head><body><img src="%s"/><pre width="79">%s</pre></body></html>' % (
+        week_info[2], html.escape(email_msg))
     part1 = MIMEText(email_msg, 'plain')
     part2 = MIMEText(html_text, 'html')
 

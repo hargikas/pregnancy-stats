@@ -148,7 +148,7 @@ def main(input_data, out_file):
 
     week_info = pregnacy_facts(gestational_age.days // 7)
     print("Information about the", week_info[0], ':', file=out_file)
-    print(week_info[1], file=out_file)
+    print(textwrap.fill(week_info[1], width=len(screen_line)), file=out_file)
     print(screen_line, file=out_file)
 
     try:

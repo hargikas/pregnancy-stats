@@ -147,7 +147,7 @@ def main(input_data, out_file):
         print(screen_line, file=out_file)
 
     week_info = pregnacy_facts(gestational_age.days // 7)
-    print("Information about the", week_info[0], file=out_file)
+    print("Information about the", week_info[0], ':', file=out_file)
     print(week_info[1], file=out_file)
     print(screen_line, file=out_file)
 
@@ -222,8 +222,9 @@ def send_email(email_info, email_msg, age, percent):
     msg['To'] = commaspace.join(email_info["email_rcpt_to"])
 
     week_info = pregnacy_facts(age.days // 7)
+    week_info[2] = week_info[2].replace('width=100', 'width=400')
     # Record the MIME types of both parts - text/plain and text/html.
-    html_text = '<html><head></head><body><img src="%s"/><pre width="79">%s</pre></body></html>' % (
+    html_text = '<html><head></head><body><p style="text-align:center;"><img src="%s"/></p><pre width="79">%s</pre></body></html>' % (
         week_info[2], html.escape(email_msg))
     part1 = MIMEText(email_msg, 'plain')
     part2 = MIMEText(html_text, 'html')

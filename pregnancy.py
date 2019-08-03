@@ -184,23 +184,26 @@ def main(input_data, out_file):
 
 
 def fun_stuff(birthday, out_file):
-    screen_size = shutil.get_terminal_size()[0] - 1
-    with c_locale():
-        chinese_desc = "Chinese zodiac: %s" % (
-            chinese_zodiac.calculate_dt(birthday))
-        print(textwrap.fill(chinese_desc, width=screen_size), file=out_file)
-        print("", file=out_file)
-        horoscope = pyaztro.Aztro(
-            sign=zodiac_sign.get_zodiac_sign(birthday).lower())
-        horoscope_desc = "Horoscope for %s: %s" % (
-            horoscope.sign.capitalize(), horoscope.description)
-        print(textwrap.fill(horoscope_desc, width=screen_size), file=out_file)
-        print("", file=out_file)
-        print("Color:", horoscope.color, file=out_file)
-        print("Mood:", horoscope.mood, file=out_file)
-        print("Compatibility:", horoscope.compatibility, file=out_file)
-        print("Lucky Number:", horoscope.lucky_number, file=out_file)
-        print("Lucky Time:", horoscope.lucky_time, file=out_file)
+    try:
+        screen_size = shutil.get_terminal_size()[0] - 1
+        with c_locale():
+            chinese_desc = "Chinese zodiac: %s" % (
+                chinese_zodiac.calculate_dt(birthday))
+            print(textwrap.fill(chinese_desc, width=screen_size), file=out_file)
+            print("", file=out_file)
+            horoscope = pyaztro.Aztro(
+                sign=zodiac_sign.get_zodiac_sign(birthday).lower())
+            horoscope_desc = "Horoscope for %s: %s" % (
+                horoscope.sign.capitalize(), horoscope.description)
+            print(textwrap.fill(horoscope_desc, width=screen_size), file=out_file)
+            print("", file=out_file)
+            print("Color:", horoscope.color, file=out_file)
+            print("Mood:", horoscope.mood, file=out_file)
+            print("Compatibility:", horoscope.compatibility, file=out_file)
+            print("Lucky Number:", horoscope.lucky_number, file=out_file)
+            print("Lucky Time:", horoscope.lucky_time, file=out_file)
+    except:
+        pass
 
 
 def pregnacy_facts(week):
